@@ -278,26 +278,27 @@ fun LoadingScreen() {
 fun SearchTextField(viewModel: MealsViewModel, navigationController: NavHostController){
     val searchString by viewModel.textFieldAreaName.collectAsState()
     Spacer(modifier=Modifier.height(16.dp))
-    Row (verticalAlignment = Alignment.CenterVertically){ OutlinedTextField(
-        value =  searchString,
-        modifier = Modifier.padding(16.dp),
-        onValueChange = {
-
+    Row (verticalAlignment = Alignment.CenterVertically){
+        OutlinedTextField(
+            value =  searchString,
+            modifier = Modifier.padding(16.dp),
+            onValueChange = {
             viewModel.settextFieldAreaName(it)
-        },
-        label = {
+            },
+            label = {
+                Text(text="Enter Area")
+            }
+         )
 
-            Text(text="Enter Area")
-        }
-    )
-        Spacer(modifier=Modifier.width(16.dp))
         Button(onClick = {
             viewModel.setChosenArea(
                 viewModel.run { textFieldAreaName.value}
             )
             navigationController.navigate("${Graph.thirdScreen.route}")
         }
-        ) { Text(text="Confirm")}
+        ) {
+            Text(text="Confirm")
+        }
     }
 
     Spacer(modifier=Modifier.height(16.dp))
