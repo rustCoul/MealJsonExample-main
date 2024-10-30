@@ -147,7 +147,9 @@ fun DishScreen(viewModel: MealsViewModel, navigationController: NavHostControlle
         if (dishState.value.isError){
             ErrorScreen(dishState.value.error!!)
         }
-        dishState.value.result?.let { DishCompose(it) }
+        if (!dishState.value.result.equals(null)){
+            DishCompose(dishState.value.result)
+        }
     }
 }
 @Composable
@@ -159,12 +161,12 @@ fun DishCompose(dish: Dish){
     ) {
         AsyncImage(
             modifier = Modifier.height(150.dp),
-            model = "https://www.themealdb.com/images/media/meals/wvpsxx1468256321.jpg",
+            model = dish.strMealThumb,
             contentDescription = null
         )
         Spacer(Modifier.height(5.dp))
         Text(
-            text = "dsgdfjdfff"
+            text = dish.strMeal
         )
     }
 }
