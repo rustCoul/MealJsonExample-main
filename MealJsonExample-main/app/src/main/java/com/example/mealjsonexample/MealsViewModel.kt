@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import android.util.Log
+
 
 class MealsViewModel: ViewModel() {
     private var mealsRepository = MealsRepository()
@@ -108,10 +110,11 @@ class MealsViewModel: ViewModel() {
                     isLoading = true
                 )
                 val response = mealsRepository.getDishById(Id)
+
                 dish.value = dish.value.copy(
                     isLoading = false,
                     isError = false,
-                    result = response.dish
+                    result = response.meals
                 )
 
             }

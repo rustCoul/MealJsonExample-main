@@ -35,6 +35,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import coil3.compose.AsyncImage
+import android.util.Log
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
+
 
 @Composable
 fun Navigation(
@@ -115,6 +119,8 @@ fun DishItem(meal: Meal,viewModel: MealsViewModel, navigationController: NavHost
     Box(
         modifier = Modifier.background(color = Color.DarkGray).clickable {
            viewModel.setChosenId(meal.idMeal)
+            Log.v("${meal.idMeal}","${meal.idMeal}")
+
             navigationController.navigate(Graph.dishScreen.route)
         }
     ){
@@ -148,14 +154,25 @@ fun DishScreen(viewModel: MealsViewModel, navigationController: NavHostControlle
             ErrorScreen(dishState.value.error!!)
         }
         if (!dishState.value.result.equals(null)){
-            DishCompose(dishState.value.result)
+            DishCompose(dishState.value.result,viewModel,navigationController)
         }
     }
 }
 @Composable
-fun DishCompose(dish: Dish){
+fun DishCompose(result: List<Dish>,viewModel: MealsViewModel, navigationController: NavHostController){
+    LazyColumn(modifier = Modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center){
+
+        items(result){
+            DishComposeItem(it,viewModel,navigationController)
+        }
+    }
+}
+@Composable
+fun DishComposeItem(dish: Dish,viewModel: MealsViewModel, navigationController: NavHostController){
     Column(
-        modifier = Modifier,
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -168,6 +185,12 @@ fun DishCompose(dish: Dish){
         Text(
             text = dish.strMeal
         )
+        Text(
+            text = dish.strInstructions
+        )
+        Button(onClick = {navigationController.navigateUp()}) {
+            Text(text="Back")
+        }
     }
 }
 @Composable
@@ -255,24 +278,27 @@ fun LoadingScreen() {
 fun SearchTextField(viewModel: MealsViewModel, navigationController: NavHostController){
     val searchString by viewModel.textFieldAreaName.collectAsState()
     Spacer(modifier=Modifier.height(16.dp))
-    OutlinedTextField(
+    Row (verticalAlignment = Alignment.CenterVertically){ OutlinedTextField(
         value =  searchString,
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        modifier = Modifier.padding(16.dp),
         onValueChange = {
 
             viewModel.settextFieldAreaName(it)
-          },
+        },
         label = {
 
             Text(text="Enter Area")
         }
     )
-    Spacer(modifier=Modifier.height(16.dp))
-    Button(onClick = {
-        viewModel.setChosenArea(
-            viewModel.run { textFieldAreaName.value}
-        )
-        navigationController.navigate("${Graph.thirdScreen.route}")
-    }) { }
+        Spacer(modifier=Modifier.width(16.dp))
+        Button(onClick = {
+            viewModel.setChosenArea(
+                viewModel.run { textFieldAreaName.value}
+            )
+            navigationController.navigate("${Graph.thirdScreen.route}")
+        }
+        ) { Text(text="Confirm")}
+    }
+
     Spacer(modifier=Modifier.height(16.dp))
 }

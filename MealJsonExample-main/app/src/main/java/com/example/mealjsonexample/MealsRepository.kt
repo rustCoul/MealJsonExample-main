@@ -19,7 +19,7 @@ data class DishState(
     var isLoading: Boolean = false,
     var isError: Boolean = false,
     var error: String? = null,
-    var result: Dish = Dish()
+    var result: List<Dish> = listOf()
 )
 class MealsRepository {
     private var _categoryState = CategoriesState()

@@ -72,4 +72,4 @@ data class Dish(
 )
 data class CategoriesResponse(val categories: List<Category>)
 data class MealsResponse(val meals: List<Meal>)
-data class DishResponse(val dish: Dish)
+data class DishResponse(val  meals: List<Dish>)
