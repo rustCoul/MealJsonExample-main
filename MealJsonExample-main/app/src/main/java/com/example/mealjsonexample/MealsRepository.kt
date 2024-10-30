@@ -15,6 +15,12 @@ data class MealsState(
     var error: String? = null,
     var result: List<Meal> = listOf()
 )
+data class DishState(
+    var isLoading: Boolean = false,
+    var isError: Boolean = false,
+    var error: String? = null,
+    var result: Dish = Dish()
+)
 class MealsRepository {
     private var _categoryState = CategoriesState()
 
@@ -23,6 +29,10 @@ class MealsRepository {
     private var _mealsState = MealsState()
 
     val mealsState get() = _mealsState
+
+    private  var _dishState= DishState()
+
+    val dishState get() = _dishState
 
     suspend fun getAllCategories(): CategoriesResponse {
         return mealService.getAllCategories()
@@ -33,5 +43,8 @@ class MealsRepository {
     }
     suspend fun getAllMealsByArea(areaName: String): MealsResponse{
         return mealService.getAllDishesByArea(areaName)
+    }
+    suspend fun getDishById(Id: String): DishResponse{
+        return mealService.getDishById(Id)
     }
 }

@@ -17,12 +17,14 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,19 +49,22 @@ fun Navigation(
         startDestination = Graph.mainScreen.route
     ){
         composable(route = Graph.secondScreen.route){
-            SecondScreen(viewModel)
+            SecondScreen(viewModel, navigationController)
         }
         composable(route = Graph.mainScreen.route){
             MainScreen(viewModel, navigationController)
         }
         composable(route = Graph.thirdScreen.route){
-            ThirdScreen(viewModel)
+            ThirdScreen(viewModel, navigationController)
+        }
+        composable(route = Graph.dishScreen.route){
+            DishScreen(viewModel, navigationController)
         }
     }
 }
 
 @Composable
-fun SecondScreen(viewModel: MealsViewModel) {
+fun SecondScreen(viewModel: MealsViewModel ,navigationController: NavHostController) {
     val categoryName = viewModel.chosenCategoryName.collectAsState()
     val dishesState = viewModel.mealsState.collectAsState()
     viewModel.getAllDishesByCategoryName(categoryName.value)
@@ -71,12 +76,12 @@ fun SecondScreen(viewModel: MealsViewModel) {
             ErrorScreen(dishesState.value.error!!)
         }
         if (dishesState.value.result.isNotEmpty()){
-            DishesScreen(dishesState.value.result)
+            DishesScreen(dishesState.value.result,viewModel, navigationController)
         }
     }
 }
 @Composable
-fun ThirdScreen(viewModel: MealsViewModel) {
+fun ThirdScreen(viewModel: MealsViewModel, navigationController: NavHostController) {
     val areaName = viewModel.chosenAreaName.collectAsState()
     val dishesState = viewModel.mealsState.collectAsState()
     viewModel.getAllDishesByArea(areaName.value)
@@ -88,27 +93,33 @@ fun ThirdScreen(viewModel: MealsViewModel) {
             ErrorScreen(dishesState.value.error!!)
         }
         if (dishesState.value.result.isNotEmpty()){
-            DishesScreen(dishesState.value.result)
+            DishesScreen(dishesState.value.result, viewModel, navigationController)
         }
     }
 }
 @Composable
-fun DishesScreen(result: List<Meal>) {
-    LazyColumn{
-
+fun DishesScreen(result: List<Meal>,viewModel: MealsViewModel, navigationController: NavHostController) {
+    LazyColumn(modifier = Modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center){
+        item { SearchTextField(viewModel, navigationController) }
         items(result){
-            DishItem(it)
+            DishItem(it,viewModel,navigationController)
         }
     }
 }
 
 @Composable
-fun DishItem(meal: Meal) {
+fun DishItem(meal: Meal,viewModel: MealsViewModel, navigationController: NavHostController) {
+
     Box(
-        modifier = Modifier.background(color = Color.DarkGray)
+        modifier = Modifier.background(color = Color.DarkGray).clickable {
+           viewModel.setChosenId(meal.idMeal)
+            navigationController.navigate(Graph.dishScreen.route)
+        }
     ){
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier,
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -124,7 +135,39 @@ fun DishItem(meal: Meal) {
         }
     }
 }
-
+@Composable
+fun DishScreen(viewModel: MealsViewModel, navigationController: NavHostController){
+    val Id = viewModel.chosenId.collectAsState()
+    val dishState = viewModel.dishState.collectAsState()
+    viewModel.getDishById(Id.value)
+    Column{
+        if (dishState.value.isLoading){
+            LoadingScreen()
+        }
+        if (dishState.value.isError){
+            ErrorScreen(dishState.value.error!!)
+        }
+        dishState.value.result?.let { DishCompose(it) }
+    }
+}
+@Composable
+fun DishCompose(dish: Dish){
+    Column(
+        modifier = Modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        AsyncImage(
+            modifier = Modifier.height(150.dp),
+            model = "https://www.themealdb.com/images/media/meals/wvpsxx1468256321.jpg",
+            contentDescription = null
+        )
+        Spacer(Modifier.height(5.dp))
+        Text(
+            text = "dsgdfjdfff"
+        )
+    }
+}
 @Composable
 fun MainScreen(viewModel: MealsViewModel, navigationController: NavHostController){
 
@@ -145,11 +188,11 @@ fun MainScreen(viewModel: MealsViewModel, navigationController: NavHostControlle
 
 @Composable
 fun CategoriesScreen(viewModel: MealsViewModel, result: List<Category>, navigationController: NavHostController) {
-    SearchTextField(viewModel,navigationController)
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2)
-    ) {
 
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(1)
+    ) {
+        item { SearchTextField(viewModel,navigationController) }
         items(result){
             CategoryItem(viewModel, it, navigationController)
         }
@@ -208,17 +251,26 @@ fun LoadingScreen() {
 }
 @Composable
 fun SearchTextField(viewModel: MealsViewModel, navigationController: NavHostController){
+    val searchString by viewModel.textFieldAreaName.collectAsState()
     Spacer(modifier=Modifier.height(16.dp))
-    OutlinedTextField(value = viewModel.chosenAreaName.toString(),
-        singleLine = true,
+    OutlinedTextField(
+        value =  searchString,
         modifier = Modifier.fillMaxWidth().padding(16.dp),
         onValueChange = {
-            viewModel.setChosenArea(it)
-            navigationController.navigate("${Graph.thirdScreen.route}")},
+
+            viewModel.settextFieldAreaName(it)
+          },
         label = {
 
             Text(text="Enter Area")
         }
     )
+    Spacer(modifier=Modifier.height(16.dp))
+    Button(onClick = {
+        viewModel.setChosenArea(
+            viewModel.run { textFieldAreaName.value}
+        )
+        navigationController.navigate("${Graph.thirdScreen.route}")
+    }) { }
     Spacer(modifier=Modifier.height(16.dp))
 }
